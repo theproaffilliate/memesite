@@ -1,0 +1,183 @@
+/* Custom scrollbar for modals */
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+.modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(31, 182, 255, 0.5);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 182, 255, 0.8);
+  background-clip: padding-box;
+}
+@import "tailwindcss";
+
+/* Base */
+:root {
+  --bg: #0b0d15;
+  --surface: #12121b;
+  --card: #11121a;
+  --accent: #1fb6ff;
+  --text: #e6eef8;
+}
+
+/* Reset & basics */
+html,
+body,
+#__next {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #0b0d15 0%, #07070a 100%);
+  color: var(--text);
+  font-family: theme("fontFamily.sans");
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+}
+
+/* Search bar */
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  width: 100%;
+  max-width: 540px;
+}
+@media (max-width: 640px) {
+  .search-input {
+    max-width: calc(100% - 2rem);
+    padding: 0.25rem 0.5rem;
+  }
+}
+@media (max-width: 768px) and (min-width: 641px) {
+  .search-input {
+    max-width: 300px;
+    padding: 0.25rem 0.5rem;
+  }
+}
+@media (min-width: 769px) {
+  .search-input {
+    max-width: 540px;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Meme card */
+.meme-card {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.015)
+  );
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--tw-shadow, 0 10px 30px rgba(2, 6, 23, 0.6));
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Responsive grid helper */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+@media (min-width: 640px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* small utilities */
+.text-muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+/* Animations */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out;
+}
+/* Custom scrollbar for filter dialogs */
+.filter-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 182, 255, 0.4) transparent;
+}
+
+.filter-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb {
+  background: rgba(31, 182, 255, 0.4);
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 182, 255, 0.6);
+  background-clip: padding-box;
+}
