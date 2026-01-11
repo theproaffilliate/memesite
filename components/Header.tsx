@@ -22,7 +22,7 @@ export default function Header() {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Link href="/" className="cursor-pointer shrink-0">
             <img
-              src="/reactions.svg"
+              src="/REACTiONS.svg"
               alt="MEMEiD"
               className="h-6 sm:h-7 md:h-8 shrink-0"
             />
@@ -101,5 +101,3 @@ export default function Header() {
     </>
   );
 }
-
-

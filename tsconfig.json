@@ -22,7 +22,7 @@
       "@/*": ["./*"]
     },
     // Silence TS 7 moduleResolution warnings
-    // "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "6.0",
     "plugins": [
       {
         "name": "next"
