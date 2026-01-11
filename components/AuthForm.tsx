@@ -13,6 +13,7 @@ export default function AuthForm() {
   const [name, setName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const { signIn, signUp, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +23,8 @@ export default function AuthForm() {
     try {
       if (isSignUp) {
         await signUp(email, password, name);
-        router.push("/");
+        // Show confirmation email message instead of redirecting immediately
+        setConfirmationEmailSent(true);
       } else {
         await signIn(email, password);
         router.push("/");
@@ -57,13 +59,40 @@ export default function AuthForm() {
         {isSignUp ? "Create Account" : "Sign In"}
       </h2>
 
-      {error && (
-        <div className="mb-4 p-3 rounded bg-red-500/20 text-red-300 text-sm">
-          {error}
+      {confirmationEmailSent ? (
+        <div className="text-center space-y-4">
+          <div className="p-4 rounded bg-green-500/20 text-green-300">
+            <p className="font-medium mb-2">Confirmation Email Sent!</p>
+            <p className="text-sm">
+              Please check your email at <strong>{email}</strong> and click the confirmation link to activate your account.
+            </p>
+            <p className="text-xs mt-2 text-green-400">
+              You can then sign in with your email and password.
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setConfirmationEmailSent(false);
+              setIsSignUp(false);
+              setEmail("");
+              setPassword("");
+              setName("");
+            }}
+            className="w-full"
+          >
+            Back to Sign In
+          </Button>
         </div>
-      )}
+      ) : (
+        <>
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-500/20 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
         {isSignUp && (
           <div>
             <label className="block text-sm font-medium mb-2">Name</label>
@@ -168,6 +197,8 @@ export default function AuthForm() {
             Forgot your password?
           </a>
         </div>
+      )}
+        </>
       )}
     </div>
   );
