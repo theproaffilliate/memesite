@@ -7,7 +7,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 
-const FFMPEG_AVAILABLE = process.env.FFMPEG_DISABLED !== "true";
+// Audio download feature disabled for now - FFmpeg not available in Vercel serverless
+const FFMPEG_AVAILABLE = false;
 
 export async function POST(request: NextRequest) {
   let tempInputPath = "";

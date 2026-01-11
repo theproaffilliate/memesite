@@ -129,8 +129,8 @@ export default function DownloadMenu({
         align="right"
       >
         <div className="flex flex-col gap-3 p-2">
-          {/* Audio Selection */}
-          <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
+          {/* Audio Selection - Disabled for now (FFmpeg not available on Vercel serverless) */}
+          {/* <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
             <p className="text-xs font-semibold text-gray-400 px-2">
               AUDIO OPTIONS
             </p>
@@ -171,7 +171,7 @@ export default function DownloadMenu({
               </div>
               <img src="/no-audio.png" alt="no-audio" className="w-5 h-5" />
             </button>
-          </div>
+          </div> */
 
           {/* Download Button */}
           <button
