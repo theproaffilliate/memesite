@@ -130,48 +130,6 @@ export default function DownloadMenu({
       >
         <div className="flex flex-col gap-3 p-2">
           {/* Audio Selection - Disabled for now (FFmpeg not available on Vercel serverless) */}
-          {/* <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
-            <p className="text-xs font-semibold text-gray-400 px-2">
-              AUDIO OPTIONS
-            </p>
-            <button
-              onClick={() => setAudio("with")}
-              className={`w-full inline-flex items-center justify-between gap-2 px-4 py-3 rounded-md ${
-                audio === "with"
-                  ? "bg-[#1ea7ff] text-white"
-                  : "bg-transparent border border-white/10 text-white"
-              }`}
-            >
-              <div className="inline-flex items-center gap-3">
-                <img
-                  src="/side-download.svg"
-                  alt="download"
-                  className="w-4 h-4"
-                />
-                <span className="font-medium">With Audio</span>
-              </div>
-              <img src="/audio.svg" alt="with-audio" className="w-5 h-5" />
-            </button>
-
-            <button
-              onClick={() => setAudio("no")}
-              className={`w-full inline-flex items-center justify-between gap-2 px-4 py-3 rounded-md ${
-                audio === "no"
-                  ? "bg-[#1ea7ff] text-white"
-                  : "bg-transparent border border-white/10 text-white"
-              }`}
-            >
-              <div className="inline-flex items-center gap-3">
-                <img
-                  src="/side-download.svg"
-                  alt="download"
-                  className="w-4 h-4"
-                />
-                <span className="font-medium">No Audio</span>
-              </div>
-              <img src="/no-audio.png" alt="no-audio" className="w-5 h-5" />
-            </button>
-          </div> */
 
           {/* Download Button */}
           <button
