@@ -25,9 +25,7 @@ export default function AuthControls({ onUpload }: { onUpload?: () => void }) {
   return (
     <div>
       <Link href="/auth">
-        <Button variant="ghost">
-          Sign in
-        </Button>
+        <Button variant="ghost">Sign in</Button>
       </Link>
     </div>
   );

@@ -5,12 +5,16 @@ import DownloadMenu from "../../../components/DownloadMenu";
 import { supabase } from "@/lib/supabase";
 import { sampleMemes } from "@/lib/placeholderData";
 
-export default async function MemePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MemePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   // Try to fetch from Supabase first
   let dbMeme = null;
   let dbMemeError = null;
-  
+
   try {
     const result = await supabase
       .from("memes")

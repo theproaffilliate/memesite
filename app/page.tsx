@@ -4,7 +4,13 @@ import HomePageContent from "./HomePageContent";
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div className="text-center py-12"><p className="text-muted">Loading memes...</p></div>}>
+    <Suspense
+      fallback={
+        <div className="text-center py-12">
+          <p className="text-muted">Loading memes...</p>
+        </div>
+      }
+    >
       <HomePageContent />
     </Suspense>
   );
