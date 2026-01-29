@@ -9,6 +9,7 @@ import { useState } from "react";
 import UploadModal from "./UploadModal";
 import useAuth from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { motion } from "framer-motion";
 
 export default function Header() {
   const router = useRouter();
@@ -18,84 +19,135 @@ export default function Header() {
 
   return (
     <>
-      <header className="header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Link href="/" className="cursor-pointer shrink-0">
-            <img
-              src="/REACTiONS.svg"
-              alt="MEMEiD"
-              className="h-6 sm:h-7 md:h-8 shrink-0"
-            />
-          </Link>
-          <div className="flex-1 min-w-0">
-            <SearchBar />
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col gap-4 py-4 px-4"
+      >
+        <div className="flex items-center justify-between w-full">
+          {/* Left group: logo */}
+          <div className="logo-group flex items-center gap-3 shrink-0">
+            <Link href="/" className="cursor-pointer shrink-0">
+              <motion.img
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                src="/REACTiONS.svg"
+                alt="MEMEiD"
+                className="h-6 sm:h-7 md:h-8 shrink-0"
+              />
+            </Link>
+          </div>
+
+          {/* Right group: upload + profile */}
+          <div className="right-group flex items-center gap-2 sm:gap-3 shrink-0">
+            {loading || profileLoading ? (
+              <div className="text-sm text-muted">Loading...</div>
+            ) : user ? (
+              <>
+                <div className="hidden sm:inline-flex">
+                  <Button
+                    variant="primary"
+                    onClick={() => setOpen(true)}
+                    className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
+                  >
+                    <img
+                      src="/upload-icon.svg"
+                      alt=""
+                      className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"
+                    />
+                    <span className="hidden sm:inline">Upload reactions</span>
+                    <span className="sm:hidden">Upload</span>
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* small-screen upload shown to the left of the avatar */}
+                  <div className="sm:hidden">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={() => setOpen(true)}
+                      className="px-3 py-2 text-sm whitespace-nowrap flex items-center gap-1 mr-1"
+                    >
+                      <img src="/upload-icon.svg" alt="" className="w-3 h-3" />
+                      <span className="text-[11px]">Upload</span>
+                    </Button>
+                  </div>
+                  <button
+                    onClick={() => router.push("/profile")}
+                    className="hover:opacity-80 transition cursor-pointer shrink-0"
+                  >
+                    <Avatar
+                      src={
+                        profile?.avatar_url ||
+                        "/placeholders/default-avatar.svg"
+                      }
+                      alt={profile?.name || user.email || "User"}
+                    />
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile")}
+                    className="text-xs sm:text-sm font-bold hover:opacity-80 transition hidden sm:block cursor-pointer"
+                  >
+                    {profile?.name || "User"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="hidden sm:inline-flex">
+                  <Button
+                    variant="primary"
+                    onClick={() => setOpen(true)}
+                    className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
+                  >
+                    <img
+                      src="/upload-icon.svg"
+                      alt=""
+                      className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"
+                    />
+                    <span className="hidden sm:inline">Upload reactions</span>
+                    <span className="sm:hidden">Upload</span>
+                  </Button>
+                </div>
+                {/* small-screen upload shown when not signed in */}
+                <div className="sm:hidden mr-2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => setOpen(true)}
+                    className="px-3 py-2 text-sm whitespace-nowrap flex items-center gap-1"
+                  >
+                    <img src="/upload-icon.svg" alt="" className="w-3 h-3" />
+                    <span className="text-sm">Upload</span>
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  style={{ background: "#0FFF75" }}
+                  onClick={() => router.push("/auth")}
+                >
+                  Sign in
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {loading || profileLoading ? (
-            <div className="text-sm text-muted">Loading...</div>
-          ) : user ? (
-            <>
-              <Button
-                variant="primary"
-                onClick={() => setOpen(true)}
-                className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
-              >
-                <img
-                  src="/upload-icon.svg"
-                  alt=""
-                  className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"
-                />
-                <span className="hidden sm:inline">Upload reactions</span>
-                <span className="sm:hidden">Upload</span>
-              </Button>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => router.push("/profile")}
-                  className="hover:opacity-80 transition cursor-pointer shrink-0"
-                >
-                  <Avatar
-                    src={
-                      profile?.avatar_url || "/placeholders/default-avatar.svg"
-                    }
-                    alt={profile?.name || user.email || "User"}
-                  />
-                </button>
-                <button
-                  onClick={() => router.push("/profile")}
-                  className="text-xs sm:text-sm hover:opacity-80 transition hidden sm:block cursor-pointer"
-                >
-                  {profile?.name || "User"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="primary"
-                onClick={() => setOpen(true)}
-                className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
-              >
-                <img
-                  src="/upload-icon.svg"
-                  alt=""
-                  className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"
-                />
-                <span className="hidden sm:inline">Upload reactions</span>
-                <span className="sm:hidden">Upload</span>
-              </Button>
-              <Button
-                variant="ghost"
-                style={{ background: "#0FFF75" }}
-                onClick={() => router.push("/auth")}
-              >
-                Sign in
-              </Button>
-            </>
-          )}
+        {/* Search Bar Row - Centered and Full Width */}
+        <div className="w-full flex justify-center mt-2">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="w-full max-w-2xl"
+          >
+            <SearchBar />
+          </motion.div>
         </div>
-      </header>
+      </motion.header>
 
       {open && <UploadModal onClose={() => setOpen(false)} />}
     </>

@@ -9,12 +9,14 @@ export function Dropdown({
   children,
   align = "right",
   fullWidth = false,
+  customWidth,
   onOpenChange,
 }: {
   trigger: ReactNode;
   children: ReactNode | ((opts: { close: () => void }) => ReactNode);
   align?: "left" | "right";
   fullWidth?: boolean;
+  customWidth?: number;
   onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -24,6 +26,7 @@ export function Dropdown({
     top: number;
     left: number;
     width?: number;
+    position?: "below" | "above";
   } | null>(null);
 
   const computePos = () => {
@@ -32,30 +35,103 @@ export function Dropdown({
     const rect = el.getBoundingClientRect();
     const scrollX = window.scrollX || window.pageXOffset;
     const scrollY = window.scrollY || window.pageYOffset;
-    const top = rect.bottom + scrollY + 8; // small gap
+    // Estimate popup height (will be replaced by actual popup height when available)
+    const estimatedPopupHeight = 320;
+    // If popup is rendered, prefer its actual height to avoid jumpy above/below toggles
+    const actualPopupHeight = popupRef.current?.offsetHeight || 0;
+    const popupHeight = actualPopupHeight || estimatedPopupHeight;
+    const gap = 8;
+
+    // Calculate space available below and above
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    // Determine if we have enough space below, if not use above
+    // Also consider scrollY to prevent positioning off-screen in long pages
+    const shouldShowAbove =
+      spaceBelow < popupHeight && spaceAbove > popupHeight;
+
+    // Calculate top position
+    // If showing above: top edge of trigger + scroll - popup height - gap
+    // If showing below: bottom edge of trigger + scroll + gap
+    let finalTop = shouldShowAbove
+      ? rect.top + scrollY - popupHeight - gap
+      : rect.bottom + scrollY + gap;
+
+    // Safety check: ensure popup top is not negative (off-screen top)
+    if (finalTop < scrollY + gap) {
+      finalTop = scrollY + gap;
+    }
+
     if (fullWidth) {
-      setCoords({ top, left: rect.left + scrollX, width: rect.width });
+      const viewportWidth = window.innerWidth;
+      // Ensure the popup is exactly as wide as the trigger, but not wider than viewport minus padding
+      // Also clamp to a maximum logical width if needed, but primarily match trigger width
+      const maxAllowed = Math.min(viewportWidth - 32, 600);
+      const popupWidth = Math.min(rect.width, maxAllowed);
+
+      // Align left to the trigger element where possible
+      let left = rect.left + scrollX;
+
+      // If it overflows right, adjust left
+      if (left + popupWidth > viewportWidth - 16) {
+        left = viewportWidth - popupWidth - 16;
+      }
+
+      // If it overflows left, clamp to 16
+      if (left < 16) left = 16;
+
+      setCoords({
+        top: finalTop,
+        left,
+        width: popupWidth,
+        position: shouldShowAbove ? "above" : "below",
+      });
       return;
     }
     // Fixed compact width for dropdown menus
-    let popupWidth = 180; // Fixed width: 180px (sm) or 200px (md)
-    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+    let popupWidth = customWidth || 180; // Fixed width: 180px (sm) or 200px (md)
+    if (
+      !customWidth &&
+      typeof window !== "undefined" &&
+      window.innerWidth >= 768
+    ) {
       popupWidth = 200; // md: fixed 200px
     }
 
-    let left = rect.right + scrollX - popupWidth - 8; // Position right-aligned with small gap
-    // Ensure popup doesn't go off-screen
+    // Default: align right (popup right edge aligns with trigger right edge)
+    // Calculate left: trigger.right - popupWidth
+    let left = rect.right + scrollX - popupWidth;
+
+    // If aligning left, use trigger left edge
+    if (align === "left") {
+      left = rect.left + scrollX;
+    }
+
+    // Boundary checks
+    // 1. Ensure doesn't go off-screen left
     if (left < 8) left = 8;
-    const maxLeft = window.innerWidth - popupWidth - 8;
+
+    // 2. Ensure doesn't go off-screen right
+    const maxLeft = window.innerWidth + scrollX - popupWidth - 8;
     if (left > maxLeft) left = maxLeft;
 
-    setCoords({ top, left, width: popupWidth });
+    setCoords({
+      top: finalTop,
+      left,
+      width: popupWidth,
+      position: shouldShowAbove ? "above" : "below",
+    });
   };
 
   useEffect(() => {
     if (open) {
       computePos();
-      const onScroll = () => computePos();
+      let rafId: number | null = null;
+      const onScroll = () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => computePos());
+      };
       const onResize = () => computePos();
       window.addEventListener("scroll", onScroll, true);
       window.addEventListener("resize", onResize);
@@ -73,6 +149,7 @@ export function Dropdown({
       };
       document.addEventListener("mousedown", onDocClick);
       return () => {
+        if (rafId) cancelAnimationFrame(rafId);
         window.removeEventListener("scroll", onScroll, true);
         window.removeEventListener("resize", onResize);
         document.removeEventListener("mousedown", onDocClick);
@@ -82,20 +159,20 @@ export function Dropdown({
   }, [open, align, fullWidth]);
 
   return (
-    <div className={fullWidth ? "relative w-full" : "relative inline-block"}>
+    <div
+      className={fullWidth ? "relative block w-full" : "relative inline-block"}
+    >
       <div
         ref={triggerRef}
         onClick={() => {
-          if (triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            setCoords({
-              top: rect.bottom + (window.scrollY || window.pageYOffset) + 8,
-              left: rect.left + (window.scrollX || window.pageXOffset),
-              width: fullWidth ? rect.width : undefined,
-            });
-          }
           setOpen((s) => {
             const next = !s;
+            if (next) {
+              // Use setTimeout to let the state update first
+              setTimeout(() => {
+                computePos();
+              }, 0);
+            }
             onOpenChange?.(next);
             return next;
           });
@@ -114,9 +191,10 @@ export function Dropdown({
                 width: coords.width,
                 zIndex: 99999,
                 willChange: "transform",
+                overflow: "hidden",
               }}
               className={clsx(
-                "rounded-md shadow-lg border border-white/6 p-2 z-50"
+                "rounded-md shadow-lg border border-white/6 z-50",
               )}
             >
               <div
@@ -125,8 +203,9 @@ export function Dropdown({
                   backdropFilter: "blur(8px)",
                   WebkitBackdropFilter: "blur(8px)",
                   borderRadius: 8,
+                  boxSizing: "border-box",
                 }}
-                className="w-full"
+                className="w-full p-2"
               >
                 {typeof children === "function"
                   ? children({
@@ -138,7 +217,7 @@ export function Dropdown({
                   : children}
               </div>
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </div>

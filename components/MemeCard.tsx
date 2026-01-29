@@ -1,6 +1,7 @@
 // components/MemeCard.tsx
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Tag from "./Tag";
 import DownloadMenu from "./DownloadMenu";
@@ -9,10 +10,14 @@ import VideoPreview from "./VideoPreview";
 import ReportModal from "./ReportModal";
 import ShareModal from "./ShareModal";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import useAuth from "@/hooks/useAuth";
 import { compactNumber } from "../utils/format";
 import { Dropdown } from "./UI/Dropdown";
+import { motion } from "framer-motion";
 
 export default function MemeCard({ meme }: { meme: any }) {
+  const router = useRouter();
+  const { user } = useAuth();
   const [showOptions, setShowOptions] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -21,9 +26,16 @@ export default function MemeCard({ meme }: { meme: any }) {
 
   return (
     <>
-      <article className="meme-card p-3 flex flex-col">
+      <motion.article
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        whileHover={{ scale: 1.02 }}
+        className="meme-card p-3 flex flex-col"
+      >
         {/* Video preview with play button */}
-        <div className="relative w-full h-[251px] rounded-md overflow-hidden">
+        <div className="relative w-full h-62.75 rounded-md overflow-hidden">
           <VideoPreview
             videoUrl={meme.video_url}
             title={meme.title}
@@ -61,6 +73,11 @@ export default function MemeCard({ meme }: { meme: any }) {
                   <button
                     type="button"
                     onClick={async () => {
+                      if (!user) {
+                        router.push("/auth");
+                        close();
+                        return;
+                      }
                       await toggleBookmark(meme.id);
                       close();
                     }}
@@ -128,7 +145,7 @@ export default function MemeCard({ meme }: { meme: any }) {
               By{" "}
               <Link
                 href={`/profile?id=${meme.creator_id}`}
-                className="text-cyan-400 hover:text-cyan-300 transition cursor-pointer"
+                className="text-cyan-400 font-bold hover:text-cyan-300 transition cursor-pointer"
               >
                 {meme.creator_name || "User"}
               </Link>
@@ -139,7 +156,7 @@ export default function MemeCard({ meme }: { meme: any }) {
             <DownloadMenu memeId={meme.id} />
           </div>
         </div>
-      </article>
+      </motion.article>
 
       {/* Video player modal */}
       <VideoPlayer

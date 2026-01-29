@@ -18,7 +18,7 @@ export default function UploadPage() {
         <div className="mt-6">
           <div className="upload-area border-dashed border border-white/6 rounded-xl p-6 flex flex-col items-center gap-4">
             <p className="text-sm text-white/70">
-              Drag & drop files here or click to choose
+              Drag &amp; drop files here or click to choose
             </p>
             <Button variant="primary" onClick={() => setOpen(true)}>
               Choose file
@@ -27,8 +27,8 @@ export default function UploadPage() {
           </div>
 
           <div className="mt-4 text-sm text-muted">
-            Note: This UI is standalone — actual upload handlers will be added
-            when you integrate Supabase or other storage provider.
+            Note: This UI is standalone — the in-header modal provides the full
+            upload flow.
           </div>
         </div>
       </div>

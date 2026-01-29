@@ -39,7 +39,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
       if (f.size > MAX_FILE_SIZE) {
         const sizeMB = (f.size / 1024 / 1024).toFixed(2);
         setRejectionMessage(
-          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`
+          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`,
         );
         setShowRejectionModal(true);
         return;
@@ -74,7 +74,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
       if (f.size > MAX_FILE_SIZE) {
         const sizeMB = (f.size / 1024 / 1024).toFixed(2);
         setRejectionMessage(
-          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`
+          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`,
         );
         setShowRejectionModal(true);
         return;
@@ -103,7 +103,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
       if (fileToUpload.size > MAX_FILE_SIZE) {
         const sizeMB = (fileToUpload.size / 1024 / 1024).toFixed(2);
         setRejectionMessage(
-          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`
+          `File size is ${sizeMB}MB. Maximum allowed size is 10MB.`,
         );
         setShowRejectionModal(true);
         return;
@@ -130,8 +130,8 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
             tags
               .split(",")
               .map((t) => t.trim())
-              .filter(Boolean)
-          )
+              .filter(Boolean),
+          ),
         );
         fd.append("country", country);
         fd.append("language", language);
@@ -161,7 +161,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
         console.error(err);
         setShowUploadingModal(false);
         setRejectionMessage(
-          err.message || "An unexpected error occurred during upload."
+          err.message || "An unexpected error occurred during upload.",
         );
         setShowRejectionModal(true);
       } finally {
@@ -246,7 +246,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
                 className="w-8 h-8 mx-auto mb-2"
               />
               <p className="text-white font-medium">
-                Click or Drag & Drop to upload video
+                Click or Drag &amp; Drop to upload video
               </p>
               <p className="text-xs text-muted mt-1">MP4 Only (Max 10MB)</p>
               <input
@@ -307,11 +307,10 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
             <CustomSelect
               value={country}
               onChange={(v) => setCountry(String(v))}
-              options={countries
-                .slice(0, 50)
-                .map((c) => ({ value: c.code, label: c.name }))}
+              options={countries.map((c) => ({ value: c.code, label: c.name }))}
               placeholder="Search location"
               className="w-full text-left rounded-md px-3 py-2 bg-transparent border border-white/6"
+              searchable={true}
             />
           </div>
 
@@ -328,6 +327,7 @@ export default function UploadModal({ onClose }: { onClose: () => void }) {
               }))}
               placeholder="Select language"
               className="w-full text-left rounded-md px-3 py-2 bg-transparent border border-white/6"
+              searchable={true}
             />
           </div>
 

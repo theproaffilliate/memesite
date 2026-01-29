@@ -73,28 +73,98 @@ body {
   align-items: center;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.04);
-  padding: 0.5rem 0.75rem;
+  padding: 0.8rem 1.2rem;
   border-radius: 9999px;
   width: 100%;
-  max-width: 540px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Ensure input can shrink inside flex */
+.search-input input,
+.search-input textarea {
+  min-width: 0;
+  font-size: 1rem;
+}
+
+/* Keep buttons inside search input contained and prevent overflow */
+.search-input > button {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.search-input > button svg {
+  display: block;
+}
+
+
+/* Search filter dropdown */
+.search-filter-dropdown {
+  width: 95vw;
+  max-width: 500px;
+}
+@media (max-width: 480px) {
+  .search-filter-dropdown {
+    width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
+    padding: 0.75rem !important;
+  }
+}
+@media (min-width: 481px) and (max-width: 640px) {
+  .search-filter-dropdown {
+    width: 90vw;
+    max-width: 90vw;
+    padding: 0.75rem !important;
+  }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+  .search-filter-dropdown {
+    width: 500px;
+    max-width: 500px;
+    padding: 1rem !important;
+  }
+}
+@media (min-width: 1025px) {
+  .search-filter-dropdown {
+    width: 500px;
+    max-width: 500px;
+    padding: 1rem !important;
+  }
+}
+
+/* Search filter input */
+.search-filter-input {
+  width: 100%;
+  font-size: 0.875rem;
+  box-sizing: border-box;
 }
 @media (max-width: 640px) {
-  .search-input {
-    max-width: calc(100% - 2rem);
-    padding: 0.25rem 0.5rem;
+  .search-filter-input {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem !important;
   }
 }
-@media (max-width: 768px) and (min-width: 641px) {
-  .search-input {
-    max-width: 300px;
-    padding: 0.25rem 0.5rem;
+
+/* Search filter list */
+.search-filter-list {
+  max-height: 56vh;
+  overflow-y: auto;
+}
+@media (max-width: 640px) {
+  .search-filter-list {
+    max-height: 40vh;
   }
 }
-@media (min-width: 769px) {
-  .search-input {
-    max-width: 540px;
-    padding: 0.5rem 0.75rem;
-  }
+
+/* Ensure list item text doesn't get clipped by rounded corners */
+.search-filter-list button {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  box-sizing: border-box;
+  text-indent: 0;
 }
 
 /* Meme card */

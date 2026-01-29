@@ -53,24 +53,30 @@ export const useUserProfile = () => {
         // If no profile exists, create one
         if (!profileData) {
           console.log("Profile not found, creating one...");
+          // Use upsert instead of insert to avoid race conditions
           const { data: newProfile, error: insertError } = await supabase
             .from("users")
-            .insert({
+            .upsert({
               id: user.id,
               email: user.email || "",
-              name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+              name: (user.user_metadata?.name?.includes("@") 
+                ? user.user_metadata.name.split("@")[0] 
+                : user.user_metadata?.name) || user.email?.split("@")[0] || "User",
               avatar_url: user.user_metadata?.avatar_url || null,
               bio: null,
-            })
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "id" })
             .select()
             .maybeSingle();
 
           if (insertError) {
             console.error("Error creating profile:", insertError);
-            throw insertError;
+            // Don't throw here to avoid blocking the UI, just log it
+            // The user might be able to use the site partially
+          } else {
+            setProfile(newProfile);
           }
-
-          setProfile(newProfile);
         } else {
           setProfile(profileData);
         }

@@ -1,10 +1,12 @@
 // components/SearchBar.tsx
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import countries from "../data/countries";
 import languages from "../data/languages";
 import { Dropdown } from "./UI/Dropdown";
+import { searchMemes } from "@/lib/memeApi";
+import { Meme } from "@/lib/types";
 
 interface SearchBarProps {
   onSearch?: (q: string, country: string, language: string) => void;
@@ -14,6 +16,7 @@ export default function SearchBar({
   onSearch: onSearchCallback,
 }: SearchBarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [q, setQ] = useState("");
   const [country, setCountry] = useState("All");
   const [language, setLanguage] = useState("All");
@@ -21,23 +24,78 @@ export default function SearchBar({
   const [lastKeyTime, setLastKeyTime] = useState(0);
   const [searchString, setSearchString] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [countryFilterText, setCountryFilterText] = useState("");
+  const [languageFilterText, setLanguageFilterText] = useState("");
+  const [suggestions, setSuggestions] = useState<Meme[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countryRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const languageRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const countryContainerRef = useRef<HTMLDivElement | null>(null);
   const languageContainerRef = useRef<HTMLDivElement | null>(null);
+  const countryInputRef = useRef<HTMLInputElement | null>(null);
+  const languageInputRef = useRef<HTMLInputElement | null>(null);
+
+  const filteredCountries = countries.filter((c) =>
+    c.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+  );
+  const filteredLanguages = languages.filter((l) =>
+    l.name.toLowerCase().includes(languageFilterText.toLowerCase()),
+  );
 
   // Focus dropdown container when it opens
   useEffect(() => {
     if (isDropdownOpen) {
-      const containerRef =
-        section === "country" ? countryContainerRef : languageContainerRef;
       setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.focus();
+        if (section === "country" && countryInputRef.current) {
+          countryInputRef.current.focus();
+        } else if (section === "language" && languageInputRef.current) {
+          languageInputRef.current.focus();
+        } else {
+          const containerRef =
+            section === "country" ? countryContainerRef : languageContainerRef;
+          if (containerRef.current) {
+            containerRef.current.focus();
+          }
         }
       }, 0);
     }
   }, [isDropdownOpen, section]);
+
+  // Debounced search for suggestions
+  useEffect(() => {
+    if (suggestionsTimeoutRef.current) {
+      clearTimeout(suggestionsTimeoutRef.current);
+    }
+
+    if (!q.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setShowSuggestions(true);
+    setSuggestionsLoading(true);
+
+    suggestionsTimeoutRef.current = setTimeout(async () => {
+      try {
+        const results = await searchMemes(q, country, language);
+        setSuggestions(results.slice(0, 5)); // Show top 5 results
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        setSuggestions([]);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 300); // Debounce for 300ms
+
+    return () => {
+      if (suggestionsTimeoutRef.current) {
+        clearTimeout(suggestionsTimeoutRef.current);
+      }
+    };
+  }, [q, country, language]);
 
   function onSearch(e?: React.FormEvent) {
     e?.preventDefault();
@@ -64,9 +122,15 @@ export default function SearchBar({
     router.push("/");
   };
 
+  // Keep input in sync with URL `q` param so suggestions navigation shows in input
+  useEffect(() => {
+    const current = searchParams?.get("q") || "";
+    setQ(current);
+  }, [searchParams]);
+
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLDivElement>,
-    isCountry: boolean
+    isCountry: boolean,
   ) => {
     const now = Date.now();
     const items = isCountry ? countries : languages;
@@ -86,7 +150,7 @@ export default function SearchBar({
 
       // Find first item starting with the search string
       const matchIndex = allItems.findIndex((item) =>
-        item.toLowerCase().startsWith(newSearch)
+        item.toLowerCase().startsWith(newSearch),
       );
 
       if (matchIndex !== -1) {
@@ -98,7 +162,7 @@ export default function SearchBar({
       e.preventDefault();
       const refs = isCountry ? countryRefs.current : languageRefs.current;
       const currentIndex = refs.findIndex(
-        (ref) => ref === document.activeElement
+        (ref) => ref === document.activeElement,
       );
       const nextIndex = Math.min(currentIndex + 1, refs.length - 1);
       if (refs[nextIndex]) refs[nextIndex].focus();
@@ -107,7 +171,7 @@ export default function SearchBar({
       e.preventDefault();
       const refs = isCountry ? countryRefs.current : languageRefs.current;
       const currentIndex = refs.findIndex(
-        (ref) => ref === document.activeElement
+        (ref) => ref === document.activeElement,
       );
       const prevIndex = Math.max(currentIndex - 1, 0);
       if (refs[prevIndex]) refs[prevIndex].focus();
@@ -122,7 +186,7 @@ export default function SearchBar({
   };
 
   return (
-    <form onSubmit={onSearch} className="search-input">
+    <form onSubmit={onSearch} className="search-input relative">
       <Dropdown
         trigger={
           <button
@@ -145,6 +209,8 @@ export default function SearchBar({
           </button>
         }
         align="left"
+        fullWidth={false}
+        customWidth={300}
       >
         {({ close }: { close: () => void }) => {
           const handleClose = () => {
@@ -152,7 +218,7 @@ export default function SearchBar({
             close();
           };
           return (
-            <div className="flex flex-col gap-4 p-4 w-full sm:min-w-80 md:min-w-96">
+            <div className="search-filter-dropdown flex flex-col gap-4 p-3">
               <div className="flex gap-2 mb-1 justify-between">
                 <div className="flex gap-2">
                   <button
@@ -194,8 +260,16 @@ export default function SearchBar({
                   <div className="text-xs text-muted mb-2">
                     Filter by country
                   </div>
+                  <input
+                    ref={countryInputRef}
+                    type="text"
+                    placeholder="Search countries..."
+                    value={countryFilterText}
+                    onChange={(e) => setCountryFilterText(e.target.value)}
+                    className="search-filter-input px-3 py-2 rounded-md bg-white/5 border border-white/10 text-white placeholder-muted outline-none focus:ring-1 focus:ring-white/20 mb-2"
+                  />
                   <div
-                    className="max-h-56 overflow-auto bg-transparent border border-white/6 rounded-md p-1 modal-scroll"
+                    className="search-filter-list bg-transparent border border-white/6 rounded-md p-1 modal-scroll"
                     onKeyDown={(e) => handleKeyDown(e, true)}
                     tabIndex={0}
                     ref={countryContainerRef}
@@ -216,7 +290,7 @@ export default function SearchBar({
                     >
                       All countries
                     </button>
-                    {countries.map((c, i) => (
+                    {filteredCountries.map((c, i) => (
                       <button
                         key={c.code}
                         ref={(el) => {
@@ -242,8 +316,16 @@ export default function SearchBar({
                   <div className="text-xs text-muted mb-2">
                     Filter by language
                   </div>
+                  <input
+                    ref={languageInputRef}
+                    type="text"
+                    placeholder="Search languages..."
+                    value={languageFilterText}
+                    onChange={(e) => setLanguageFilterText(e.target.value)}
+                    className="search-filter-input px-3 py-2 rounded-md bg-white/5 border border-white/10 text-white placeholder-muted outline-none focus:ring-1 focus:ring-white/20 mb-2"
+                  />
                   <div
-                    className="max-h-40 overflow-auto bg-transparent border border-white/6 rounded-md p-1 modal-scroll"
+                    className="search-filter-list bg-transparent border border-white/6 rounded-md p-1 modal-scroll"
                     onKeyDown={(e) => handleKeyDown(e, false)}
                     tabIndex={0}
                     ref={languageContainerRef}
@@ -264,7 +346,7 @@ export default function SearchBar({
                     >
                       All languages
                     </button>
-                    {languages.map((l, i) => (
+                    {filteredLanguages.map((l, i) => (
                       <button
                         key={l.code}
                         ref={(el) => {
@@ -293,19 +375,65 @@ export default function SearchBar({
 
       <input
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={(e) => {
+          setQ(e.target.value);
+          setShowSuggestions(true);
+        }}
+        onFocus={() => q && setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
         placeholder="Search"
         title="Search video reactions"
-        className="bg-transparent outline-none flex-1 text-sm sm:text-base sm:placeholder-shown:inline"
+        className="bg-transparent outline-none flex-1 text-sm sm:text-base"
       />
+
+      {/* Search suggestions dropdown */}
+      {showSuggestions && q.trim() && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 border border-white/10 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto modal-scroll">
+          {suggestionsLoading ? (
+            <div className="p-3 text-center text-sm text-muted">Loading...</div>
+          ) : suggestions.length > 0 ? (
+            <div>
+              {suggestions.map((meme) => (
+                <button
+                  key={meme.id}
+                  type="button"
+                  onClick={() => {
+                    const newQ = meme.title;
+                    setQ(newQ);
+                    setShowSuggestions(false);
+                    // Navigate with the new query value directly
+                    const params = new URLSearchParams();
+                    params.set("q", newQ);
+                    if (country !== "All") params.set("country", country);
+                    if (language !== "All") params.set("language", language);
+                    const queryString = params.toString();
+                    router.push(queryString ? `/?${queryString}` : "/");
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-white/5 transition text-sm border-b border-white/5 last:border-0"
+                >
+                  <div className="truncate font-medium text-white">
+                    {meme.title}
+                  </div>
+                  {meme.description && (
+                    <div className="text-xs text-muted truncate">
+                      {meme.description}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="p-3 text-center text-sm text-muted">
+              No videos found
+            </div>
+          )}
+        </div>
+      )}
 
       <button
         type="submit"
-        className="flex items-center justify-center shrink-0 cursor-pointer"
-        style={{
-          width: "18px",
-          height: "18px",
-        }}
+        className="flex items-center justify-center shrink-0 cursor-pointer w-4 h-4 sm:w-5 sm:h-5"
+        onClick={() => setShowSuggestions(false)}
       >
         <svg
           viewBox="0 0 24 24"
@@ -314,10 +442,8 @@ export default function SearchBar({
           strokeWidth="2.5"
           style={{
             color: "rgba(255, 255, 255, 0.6)",
-            width: "14px",
-            height: "14px",
           }}
-          className="sm:w-5 sm:h-5"
+          className="w-full h-full"
         >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />

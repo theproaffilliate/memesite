@@ -1,9 +1,83 @@
 // app/meme/[id]/page.tsx
 "use server";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import DownloadMenu from "../../../components/DownloadMenu";
 import { supabase } from "@/lib/supabase";
 import { sampleMemes } from "@/lib/placeholderData";
+
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+async function getMeme(id: string) {
+  try {
+    const { data, error } = await supabase
+      .from("memes")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (data) return data;
+  } catch (error) {}
+
+  return sampleMemes.find((m) => m.id === id);
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const meme = await getMeme(id);
+
+  if (!meme) {
+    return {
+      title: "Meme Not Found",
+    };
+  }
+
+  const title = `${meme.title} - Video Meme Download`;
+  const description =
+    meme.description ||
+    `Watch and download the ${meme.title} video meme. High quality, watermark-free reaction clip.`;
+
+  return {
+    title: meme.title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      type: "video.other",
+      videos: [
+        {
+          url: meme.video_url,
+          width: 1280,
+          height: 720,
+          type: "video/mp4",
+        },
+      ],
+      images: [
+        {
+          url: meme.thumbnail_url || "/og-image.jpg",
+          width: 1200,
+          height: 630,
+          alt: meme.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "player",
+      title: title,
+      description: description,
+      images: [meme.thumbnail_url || "/og-image.jpg"],
+      players: [
+        {
+          playerUrl: meme.video_url,
+          streamUrl: meme.video_url,
+          width: 1280,
+          height: 720,
+        },
+      ],
+    },
+  };
+}
 
 export default async function MemePage({
   params,
@@ -11,28 +85,29 @@ export default async function MemePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  // Try to fetch from Supabase first
-  let dbMeme = null;
-  let dbMemeError = null;
-
-  try {
-    const result = await supabase
-      .from("memes")
-      .select("*")
-      .eq("id", id)
-      .single();
-    dbMeme = result.data;
-    dbMemeError = result.error;
-  } catch (error) {
-    dbMemeError = error;
-  }
-
-  // Fall back to sample data for testing
-  let meme = dbMeme || sampleMemes.find((m) => m.id === id);
+  const meme = await getMeme(id);
 
   if (!meme) {
     return notFound();
   }
+
+  // Generate JSON-LD Structured Data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: meme.title,
+    description:
+      meme.description || `Watch and download ${meme.title} - Video Meme`,
+    thumbnailUrl: [meme.thumbnail_url || "https://reactions.com/og-image.jpg"],
+    uploadDate: meme.created_at || new Date().toISOString(),
+    contentUrl: meme.video_url,
+    embedUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://reactions.com"}/meme/${meme.id}`,
+    interactionStatistic: {
+      "@type": "InteractionCounter",
+      interactionType: { "@type": "WatchAction" },
+      userInteractionCount: meme.views || 0,
+    },
+  };
 
   // Fetch related memes
   let relatedMemes = [];
@@ -49,6 +124,10 @@ export default async function MemePage({
 
   return (
     <section className="py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="bg-black rounded-lg overflow-hidden">
@@ -56,7 +135,7 @@ export default async function MemePage({
             <video
               controls
               src={meme.video_url}
-              className="w-full h-[440px] object-cover bg-black"
+              className="w-full h-110 object-cover bg-black"
             />
           </div>
           <h1 className="text-2xl font-semibold mt-4">{meme.title}</h1>

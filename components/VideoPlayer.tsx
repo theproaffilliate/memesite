@@ -122,7 +122,7 @@ export default function VideoPlayer({
           <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
           {creator && (
             <p className="text-gray-300">
-              By <span className="font-semibold">{creator}</span>
+              By <span className="font-bold">{creator}</span>
             </p>
           )}
         </div>

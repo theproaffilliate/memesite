@@ -108,25 +108,27 @@ export default function DownloadMenu({
       <Dropdown
         fullWidth
         trigger={
-          <Button
-            variant="primary"
-            size="md"
-            className="flex items-center justify-between w-full px-3"
-          >
-            <div className="inline-flex items-center gap-2">
-              <img
-                src="/side-download.svg"
-                alt="download"
-                className="w-4 h-4"
-              />
-              <span>Download</span>
-            </div>
-            <span className="inline-flex items-center gap-2">
-              <span className="text-sm">▾</span>
-            </span>
-          </Button>
+          <div className="w-full">
+            <Button
+              variant="primary"
+              size="md"
+              className="flex items-center justify-between w-full px-3"
+            >
+              <div className="inline-flex items-center gap-2">
+                <img
+                  src="/side-download.svg"
+                  alt="download"
+                  className="w-4 h-4"
+                />
+                <span>Download</span>
+              </div>
+              <span className="inline-flex items-center gap-2">
+                <span className="text-sm">▾</span>
+              </span>
+            </Button>
+          </div>
         }
-        align="right"
+        align="left"
       >
         <div className="flex flex-col gap-3 p-2">
           {/* Audio Selection - Disabled for now (FFmpeg not available on Vercel serverless) */}
